@@ -20,8 +20,13 @@ module Noaa
     def handle_catalog(catalog)
       entries = catalog['feed']['entry']
       entries = [entries] unless entries.kind_of?(Array)
-      entries.each do |entry| 
-        item = HTTParty.get(entry['id'], format: :xml)['alert']
+      entries.each do |entry|
+        if entry['id'].start_with?('//')
+          url = "http:#{entry['id']}"
+        else
+          url = entry['id']
+        end
+        item = HTTParty.get(url, format: :xml)['alert']
         alert = Noaa::Alert.new(entry['id'], item)
         @alerts << alert unless alert.description.empty?
       end
